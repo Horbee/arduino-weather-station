@@ -1,1 +1,32 @@
-.vscode
+# Ignore build output directory
+/build
+
+# Ignore VS Code settings folder
+.vscode/
+
+# Ignore Arduino compiled files and temporary files
+*.bin
+*.elf
+*.hex
+*.eep
+*.d
+*.dSYM/
+*.o
+*.a
+*.out
+
+# Ignore backup files
+*.bak
+*.tmp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore compiled Python files (if any)
+__pycache__/
+*.pyc
+*.pyo
