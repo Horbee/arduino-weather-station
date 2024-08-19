@@ -21,7 +21,6 @@ void setup() {
     Serial.print("SensorID was: 0x"); Serial.println(bme.sensorID(),16);
     while (1) delay(10);
   }
-
   displayUtils.initDisplay();
 }
 
