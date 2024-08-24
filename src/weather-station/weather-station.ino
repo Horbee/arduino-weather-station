@@ -2,6 +2,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <LowPower.h>
+#include <SoftwareSerial.h>
 
 #include "DisplayUtils.h"
 
@@ -11,14 +12,21 @@
 #define BME280_ADDRESS 0x76 
 
 #define BTN_PIN 2
+#define ESP_RX_PIN 5
+#define ESP_TX_PIN 6
 
 volatile bool isScreenOn = false, btnPressed = false;
 
 Adafruit_BME280 bme; 
 DisplayUtils displayUtils(SCREEN_WIDTH, SCREEN_HEIGHT); 
+SoftwareSerial espSerial(ESP_RX_PIN, ESP_TX_PIN); // RX, TX
+
+long int lastSubmitTime = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Serial monitor for debugging
+  espSerial.begin(9600); // Communication with ESP8266
+
 
   unsigned status = bme.begin(BME280_ADDRESS, &Wire);
   if (!status) {
@@ -38,7 +46,21 @@ void loop() {
 
   if (isScreenOn) {
     Serial.println("Screen is on...");
-    printValues();
+    
+    String temp = String(bme.readTemperature());
+    String pressure = String(bme.readPressure() / 100.0F);
+    String humidity = String(bme.readHumidity());
+
+    printValues(temp, pressure, humidity);
+
+    if (millis() > (lastSubmitTime + 10000)) {
+      // Send the sensor data to the ESP8266
+      Serial.println("Sending data...");
+      String sensorData = temp + "," + humidity + "," + pressure;
+      espSerial.println(sensorData);
+      lastSubmitTime = millis();
+    }
+
     delay(1000);
   } else {
     Serial.println("Going to sleep...");
@@ -51,11 +73,7 @@ void loop() {
 
 }
 
-void printValues() {
-  String temp = String(bme.readTemperature());
-  String pressure = String(bme.readPressure() / 100.0F);
-  String humidity = String(bme.readHumidity());
-
+void printValues(String temp, String pressure, String humidity) {
   displayUtils.clearDisplay();
 
   displayUtils.drawText("Temp.", 0, 0);
