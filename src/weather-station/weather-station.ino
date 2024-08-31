@@ -71,6 +71,12 @@ void loop() {
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
   }
 
+  // Listen to the espSerial messages and print them to the console
+  if (espSerial.available()) {
+    String espMessage = espSerial.readStringUntil('\n');
+    Serial.println("Message from ESP8266: " + espMessage);
+  }
+
 }
 
 void printValues(String temp, String pressure, String humidity) {

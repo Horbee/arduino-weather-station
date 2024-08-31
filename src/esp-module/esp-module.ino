@@ -5,17 +5,11 @@ const char* ssid = "";
 const char* password = "";
 const char* host = "arduino-nextjs-test.vercel.app";
 const int httpsPort = 443; // HTTPS port
+const unsigned long wifiTimeout = 20000; // 20 seconds timeout
 
 void setup() {
   Serial.begin(9600);
-  WiFi.begin(ssid, password);
-
-  Serial.print("Connecting to Wi-Fi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("Connected!");
+  connectToWiFi();
 }
 
 void loop() {
@@ -33,7 +27,38 @@ void loop() {
   }
 }
 
+void connectToWiFi() {
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(ssid, password);
+
+  unsigned long startTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+
+    // Check if the timeout has been reached
+    if (millis() - startTime >= wifiTimeout) {
+      Serial.println("\nWi-Fi connection timed out");
+      return; // Exit the function if timeout is reached
+    }
+  }
+
+  Serial.println("\nConnected!");
+}
+
 void submitMeasurements(float temperature, float humidity, float pressure) {
+  // Check if still connected to Wi-Fi
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wi-Fi connection lost. Reconnecting...");
+    connectToWiFi();
+    // Optionally, you could check again if the connection was successful before proceeding
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("Failed to reconnect to Wi-Fi. Data submission aborted.");
+      return; // Abort data submission if reconnection fails
+    }
+  }
+
   WiFiClientSecure client;
   client.setInsecure(); // Use this if you don't want to verify the SSL certificate
 
