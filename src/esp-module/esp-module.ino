@@ -9,7 +9,6 @@ const unsigned long wifiTimeout = 20000; // 20 seconds timeout
 
 void setup() {
   Serial.begin(9600);
-  connectToWiFi();
 }
 
 void loop() {
@@ -50,20 +49,14 @@ void connectToWiFi() {
 void submitMeasurements(float temperature, float humidity, float pressure) {
   // Check if still connected to Wi-Fi
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Wi-Fi connection lost. Reconnecting...");
     connectToWiFi();
-    // Optionally, you could check again if the connection was successful before proceeding
-    if (WiFi.status() != WL_CONNECTED) {
-      Serial.println("Failed to reconnect to Wi-Fi. Data submission aborted.");
-      return; // Abort data submission if reconnection fails
-    }
   }
 
   WiFiClientSecure client;
   client.setInsecure(); // Use this if you don't want to verify the SSL certificate
 
   if (!client.connect(host, httpsPort)) {
-    Serial.println("Connection failed");
+    Serial.println("Connection to server failed");
     return;
   }
 
@@ -93,5 +86,5 @@ void submitMeasurements(float temperature, float humidity, float pressure) {
   }
 
   client.stop();
-  Serial.println("Connection closed");
+  Serial.println("Connection to server closed");
 }
